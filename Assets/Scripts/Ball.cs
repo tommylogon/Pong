@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -15,7 +14,6 @@ public class Ball : MonoBehaviour
         
     };
     [SerializeField] float speedIncreaseFactor = 1.1f;
-    [SerializeField] float currentSpeed;
     [SerializeField] float maxSpeed = 10f;
 
     Rigidbody2D rb;
@@ -26,18 +24,19 @@ public class Ball : MonoBehaviour
         StartDirection();
     }
 
-    private void Update()
-    {
-        currentSpeed = rb.velocity.magnitude;
-    }
+   
     private void OnTriggerEnter2D(Collider2D other)
     {
+        
         if (other.CompareTag("Paddle") || other.CompareTag("Wall"))
         {
-            Vector2 normal = CalculateReflectionNormal(other);
+            Vector2 normal = GameManager.instance.GetNormal(transform.position, other);
             ReflectBall(normal);
+
+            IncreaseSpeed(other.GetComponent<Rigidbody2D>().velocity);
             // Handle any additional interactions, like speed increase
         }
+        
     }
 
 
@@ -53,48 +52,37 @@ public class Ball : MonoBehaviour
 
         rb.velocity = possibleDirection[randomIndex] * speedIncreaseFactor;
     }
-    private void IncreaseSpeed()
+    private void IncreaseSpeed(Vector2 SpeedAdder)
     {
-        rb.velocity *= speedIncreaseFactor;
+        if(SpeedAdder.magnitude > 0)
+        {
+            //SpeedAdder.y = rb.velocity.y;
+            rb.velocity += SpeedAdder;
+        }
+        else
+        {
+            rb.velocity *= speedIncreaseFactor;
+        }
+        
+        
         rb.velocity = Vector2.ClampMagnitude(rb.velocity, maxSpeed);
     }
     private void ReflectBall(Vector2 normal)
     {
         Vector2 incomingVector = rb.velocity;
         rb.velocity = Vector2.Reflect(incomingVector, normal);
-        IncreaseSpeed();
+        
     }
-    private Vector2 CalculateReflectionNormal(Collider2D collider)
-    {
-        if (collider.CompareTag("Wall"))
-        {
-            // For vertical walls
-            if (transform.position.x > collider.transform.position.x)
-            {
-                // Ball is to the right of the wall, so the wall is likely on the left
-                return new Vector2(1, 0); // Normal pointing to the right
-            }
-            else
-            {
-                // Ball is to the left of the wall, so the wall is likely on the right
-                return new Vector2(-1, 0); // Normal pointing to the left
-            }
-        }
-        else if (collider.CompareTag("Paddle"))
-        {
-            // For horizontal paddles
-            if (transform.position.y > collider.transform.position.y)
-            {
-                // Ball is above the paddle, so the paddle is likely the bottom one
-                return new Vector2(0, 1); // Normal pointing upwards
-            }
-            else
-            {
-                // Ball is below the paddle, so the paddle is likely the top one
-                return new Vector2(0, -1); // Normal pointing downwards
-            }
-        }
 
-        return Vector2.zero; // Default case, should not usually happen
+    public void ResetBall(bool startNew)
+    {
+        transform.position = Vector2.zero;
+        if (startNew)
+        {
+            StartDirection();
+        }
+        else { rb.velocity = Vector2.zero; }
+        
     }
+
 }
