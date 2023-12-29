@@ -9,6 +9,8 @@ public class GameManager : MonoBehaviour
 
     int currentScorePlayer1; 
     int currentScorePlayer2;
+
+    [SerializeField] int waitTimer;
     [SerializeField] ScoreZone Player1Score;
     [SerializeField] ScoreZone Player2Score;
     [SerializeField] PlayerController player1;
@@ -30,11 +32,13 @@ public class GameManager : MonoBehaviour
     {
         instance = this;
         UIController.Instance.UpdateScore(currentScorePlayer1, currentScorePlayer2);
+        NewMatch();
     }
     private void OnEnable()
     {
         Player1Score.onScore += () => AddScore(0);
         Player2Score.onScore += () => AddScore(1);
+        ball.onHit += () => SoundManager.instance.PlayHitSound();
         
     }
 
@@ -69,13 +73,13 @@ public class GameManager : MonoBehaviour
             }
 
             UIController.Instance.UpdateScore(currentScorePlayer1, currentScorePlayer2);
-            
+            SoundManager.instance.PlayScoreSound();
             if (currentScorePlayer1 > 4 || currentScorePlayer2 > 4)
             {
                 currentGameState = GameState.GameOver;
                 return;
             }
-
+            //add delay
             NewMatch();
 
 
@@ -89,13 +93,25 @@ public class GameManager : MonoBehaviour
         {
             player1.Reset();
             player2.Reset();
-            ball.ResetBall(true);
+            ball.ResetBall(false);
+            StartCoroutine(StartMatchAfterDelay());
         }
         else
         {
+            SoundManager.instance.PlayGameOverSound();
             ball.ResetBall(false);
         }
         
+    }
+
+    private IEnumerator StartMatchAfterDelay()
+    {
+        SoundManager.instance.PlayCountDownSound();
+        UIController.Instance.StartCountdown(waitTimer);
+
+        yield return new WaitForSeconds(waitTimer);
+
+        ball.ResetBall(true);
     }
 
     public Vector2 GetNormal(Vector2 position, Collider2D collider)

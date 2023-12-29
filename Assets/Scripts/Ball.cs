@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -5,23 +6,25 @@ public class Ball : MonoBehaviour
 {
     List<Vector2> possibleDirection = new List<Vector2>()
     {
-        new Vector2(0.2f, 1.2f),  // Up
-        new Vector2(0.2f, 1.2f),  // Diagonal Right Up
-        new Vector2(-1.2f, 1.2f), // Diagonal Left Up
-        new Vector2(0.2f, -1.2f), // Down
-        new Vector2(1.2f, -1.2f), // Diagonal Right Down
-        new Vector2(-1.2f, -1.2f), // Diagonal left Down
+        new Vector2(0.2f, 3.2f),  // Up
+        new Vector2(0.2f, 3.2f),  // Diagonal Right Up
+        new Vector2(-3.2f, 3.2f), // Diagonal Left Up
+        new Vector2(0.2f, -3.2f), // Down
+        new Vector2(3.2f, -3.2f), // Diagonal Right Down
+        new Vector2(-3.2f, -3.2f), // Diagonal left Down
         
     };
     [SerializeField] float speedIncreaseFactor = 1.1f;
     [SerializeField] float maxSpeed = 10f;
+
+    public Action onHit;
 
     Rigidbody2D rb;
     // Start is called before the first frame update
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-        StartDirection();
+       
     }
 
    
@@ -34,7 +37,7 @@ public class Ball : MonoBehaviour
             ReflectBall(normal);
 
             IncreaseSpeed(other.GetComponent<Rigidbody2D>().velocity);
-            // Handle any additional interactions, like speed increase
+            onHit?.Invoke();
         }
         
     }
@@ -43,11 +46,11 @@ public class Ball : MonoBehaviour
     private void StartDirection()
     {
 
-        int randomIndex = Random.Range(0, possibleDirection.Count);
+        int randomIndex = UnityEngine.Random.Range(0, possibleDirection.Count);
         while (randomIndex > possibleDirection.Count)
         {
             Debug.Log("Index is " + randomIndex);
-            randomIndex = Random.Range(0, possibleDirection.Count);
+            randomIndex = UnityEngine.Random.Range(0, possibleDirection.Count);
         }
 
         rb.velocity = possibleDirection[randomIndex] * speedIncreaseFactor;
