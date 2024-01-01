@@ -32,12 +32,15 @@ public class GameManager : MonoBehaviour
     {
         instance = this;
         UIController.Instance.UpdateScore(currentScorePlayer1, currentScorePlayer2);
-        NewMatch();
+        currentGameState = GameState.Paused; 
+
+
+       
     }
     private void OnEnable()
     {
-        Player1Score.onScore += () => AddScore(0);
-        Player2Score.onScore += () => AddScore(1);
+        Player1Score.onScore += () => AddScore(player1.GetPlayerID());
+        Player2Score.onScore += () => AddScore(player2.GetPlayerID());
         ball.onHit += () => SoundManager.instance.PlayHitSound();
         
     }
@@ -77,30 +80,67 @@ public class GameManager : MonoBehaviour
             if (currentScorePlayer1 > 4 || currentScorePlayer2 > 4)
             {
                 currentGameState = GameState.GameOver;
-                return;
+                
             }
-            //add delay
-            NewMatch();
+            
+            NewRound();
 
 
         }
         
     }
 
-    private void NewMatch()
+    private void NewRound()
     {
         if(currentGameState == GameState.Running)
         {
             player1.Reset();
-            player2.Reset();
+            player2.Reset();           
             ball.ResetBall(false);
             StartCoroutine(StartMatchAfterDelay());
         }
-        else
+        else if(currentGameState == GameState.GameOver)
         {
             SoundManager.instance.PlayGameOverSound();
+            if(currentScorePlayer1 > 4)
+            {
+                UIController.Instance.ShowGameOver(player1.playerName);
+            }
+            else if(currentScorePlayer2 > 4)
+            {
+                UIController.Instance.ShowGameOver(player2.playerName);
+            }
+            
             ball.ResetBall(false);
         }
+        
+    }
+
+    private void NewMatch()
+    {
+        currentGameState = GameState.Running;
+        currentScorePlayer1 = 0;
+        currentScorePlayer2 = 0;
+        player1.Shrink(currentScorePlayer1);
+        player2.Shrink(currentScorePlayer2);
+    }
+
+    public void StartLocalMatch()
+    {
+        player1.isAI = false;
+        player2.isAI = false;
+        NewMatch();
+        NewRound();
+        
+
+    }
+
+    public void StartVersusAI()
+    {
+        player1.isAI = false;
+        player2.isAI = true;
+        NewMatch();
+        NewRound();
         
     }
 

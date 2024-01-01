@@ -6,14 +6,15 @@ using UnityEngine.Rendering;
 
 public class PlayerController : MonoBehaviour
 {
-    [SerializeField] private bool isAI;
-    [SerializeField] int minY;
-    [SerializeField] int maxY;
+    [SerializeField] public bool isAI;
+    [SerializeField] int playerID;
+    [SerializeField] public string playerName;
     [SerializeField] float speedModifier;
     [SerializeField] float shrinkFactor; //how much smaller the paddle is based on score
     [SerializeField] float currentScale;
 
     [SerializeField] PlayerInput playerInput;
+    [SerializeField] NPCInput npcInput;
 
     Rigidbody2D rb;
 
@@ -21,35 +22,38 @@ public class PlayerController : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();   
     }
-
-    // Update is called once per frame
-    void Update()
+    private void OnEnable()
     {
-       
+        npcInput.OnMovementPerformed += NpcInput_OnMovementPerformed;
     }
 
-    public void MoveLeft(InputAction.CallbackContext context)
+    private void NpcInput_OnMovementPerformed(object sender, NPCInput.OnMovementPerformedEventArgs e)
     {
         if (isAI)
         {
-
+            rb.velocity = e.velocity * speedModifier;
         }
-        else
+
+        
+    }
+
+    public void MoveLeft()
+    {
+        if (!isAI)
         {
-            
+
+                   
                 rb.velocity = Vector2.left * speedModifier;
                 
             
         }
     }
-    public void MoveRight(InputAction.CallbackContext context)
+    public void MoveRight()
     {
-        if (isAI)
+        if (!isAI)
         {
 
-        }
-        else
-        {
+        
             
                 rb.velocity = Vector2.right * speedModifier;
                 
@@ -63,25 +67,37 @@ public class PlayerController : MonoBehaviour
        // transform.localScale = new Vector3(5,1,1);
         transform.position = new Vector2(0,transform.position.y);
         rb.velocity = Vector2.zero ;
+
+        if (isAI)
+        {
+            npcInput.StartAI(true);
+        }
+        else
+        {
+            npcInput.StartAI(false);
+        }
     }
 
-    private void OnTriggerEnter2D(Collider2D collision)
+    private void OnTriggerStay2D(Collider2D other)
     {
-        if (collision.CompareTag("Wall"))
+        if (other.CompareTag("Wall"))
         {
             rb.velocity = Vector2.zero;
-            Vector2 resetPos = new Vector2(transform.position.x + GameManager.instance.GetNormal(transform.position, collision).x / 10, transform.position.y);
+            Vector2 resetPos = new Vector2(transform.position.x + GameManager.instance.GetNormal(transform.position, other).x / 10, transform.position.y);
             transform.position = resetPos;
-            //rb.velocity = GameManager.instance.GetNormal(collision);
+            
         }
-        
-        
     }
 
     public void Shrink(int score)
     {
         transform.localScale = new Vector3(Mathf.Clamp(5 - score,1,5), 1, 1);
         speedModifier += score;
-        Debug.Log(shrinkFactor);
+        
+    }
+
+    public int GetPlayerID()
+    {
+        return playerID;
     }
 }

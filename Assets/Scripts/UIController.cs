@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
+
 
 public class UIController : MonoBehaviour
 {
@@ -10,7 +12,10 @@ public class UIController : MonoBehaviour
     [SerializeField] TextMeshProUGUI countDownText;
     [SerializeField] TextMeshProUGUI gameOverText;
     [SerializeField] string baseText;
-    // Start is called before the first frame update
+
+    [SerializeField] GameObject FocusMessagePanel;
+    [SerializeField] GameObject MainMenu;
+
 
     private void Start()
     {
@@ -26,15 +31,30 @@ public class UIController : MonoBehaviour
 
         countDownText.text = string.Empty;
         gameOverText.text = string.Empty;
+        FocusMessagePanel.SetActive(false);
         UpdateScore(0, 0);
-        baseText = scoreText.text;
+        
     }
+
+    public void ToggleMainMenu()
+    {
+        MainMenu.SetActive(!MainMenu.activeSelf);
+        Time.timeScale = MainMenu.activeSelf ? 0 : 1;
+    }
+
+    public void ToggleLobby()
+    {
+        Debug.Log("No lobby yet");
+    }
+
+
 
     public void UpdateScore(int p1, int p2)
     {
         string text = baseText;
         text = text.Replace("{P1Score}", p1.ToString());
         text = text.Replace("{P2Score}", p2.ToString());
+        
         scoreText.text = text;
     }
     public void StartCountdown(int duration)
@@ -43,6 +63,7 @@ public class UIController : MonoBehaviour
     }
     private IEnumerator CountdownCoroutine(int duration)
     {
+        FocusMessagePanel.SetActive(true);
         while(duration > 0)
         {
             countDownText.text = duration.ToString();
@@ -50,5 +71,13 @@ public class UIController : MonoBehaviour
             duration--;
         }
         countDownText.text = "";
+        FocusMessagePanel.SetActive(false);
     }
+    public void ShowGameOver(string playerName)
+    {
+        gameOverText.text = "WINNER: <br>" + playerName;
+        FocusMessagePanel.SetActive(true);
+    }
+    
+    
 }

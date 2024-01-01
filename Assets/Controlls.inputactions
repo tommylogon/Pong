@@ -1,5 +1,5 @@
 {
-    "name": "New Controls",
+    "name": "Controlls",
     "maps": [
         {
             "name": "Player1",
@@ -27,6 +27,15 @@
                     "name": "Shoot",
                     "type": "Button",
                     "id": "41d6578d-55b1-4734-a6d0-904f3d20ebdd",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Pause",
+                    "type": "Button",
+                    "id": "dc393ebe-10d9-4660-8134-c9e79ebdf408",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -64,6 +73,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "Shoot",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "595dcb98-4ce2-45a7-8de9-e97248457516",
+                    "path": "<Keyboard>/escape",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Pause",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
@@ -118,5 +138,17 @@
             ]
         }
     ],
-    "controlSchemes": []
+    "controlSchemes": [
+        {
+            "name": "Keyboard",
+            "bindingGroup": "Keyboard",
+            "devices": [
+                {
+                    "devicePath": "<Keyboard>",
+                    "isOptional": false,
+                    "isOR": false
+                }
+            ]
+        }
+    ]
 }

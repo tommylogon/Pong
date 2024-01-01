@@ -18,6 +18,9 @@ public class Ball : MonoBehaviour
     [SerializeField] float maxSpeed = 10f;
 
     public Action onHit;
+    public Action<Vector2> OnBallPositionChanged;
+
+    private Vector2 lastreportedPosition;
 
     Rigidbody2D rb;
     // Start is called before the first frame update
@@ -27,7 +30,16 @@ public class Ball : MonoBehaviour
        
     }
 
-   
+    private void Update()
+    {
+        if((lastreportedPosition - (Vector2)transform.position).sqrMagnitude> 1)
+        {
+            lastreportedPosition = (Vector2)transform.position;
+            OnBallPositionChanged?.Invoke(lastreportedPosition);
+        }
+    }
+
+
     private void OnTriggerEnter2D(Collider2D other)
     {
         
