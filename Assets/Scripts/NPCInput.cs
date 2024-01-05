@@ -14,6 +14,7 @@ public class NPCInput : MonoBehaviour
         Smasher
     }
     [SerializeField] bool isActive;
+    [SerializeField] bool enableRandomAI;
     [SerializeField] NPC_TYPE type;
     [SerializeField] float timer;
     [SerializeField] int smasherDistance;
@@ -68,7 +69,15 @@ public class NPCInput : MonoBehaviour
     public void StartAI(bool startAI)
     {
         isActive = startAI;
-        SetRandomAIType();
+        if (enableRandomAI)
+        {
+            SetRandomAIType();
+        }
+        else
+        {
+            type = NPC_TYPE.Defender;
+        }
+        
 
     }
 

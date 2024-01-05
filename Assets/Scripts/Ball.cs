@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 
 public class Ball : MonoBehaviour
 {
@@ -16,11 +17,22 @@ public class Ball : MonoBehaviour
     };
     [SerializeField] float speedIncreaseFactor = 1.1f;
     [SerializeField] float maxSpeed = 10f;
+    [SerializeField] float dissolveAmount = 0f;
 
     public Action onHit;
     public Action<Vector2> OnBallPositionChanged;
 
     private Vector2 lastreportedPosition;
+
+    [SerializeField] private SpriteRenderer spriteRenderer;
+    [SerializeField] private TrailRenderer trailRenderer;
+    [SerializeField] private AnimationCurve speedToColorCurve;
+    [SerializeField] private Light2D ballLight;
+
+    [SerializeField] private Color startColor = Color.blue;
+    [SerializeField] private Color endColor = Color.red;
+
+    [SerializeField] private Material material;
 
     Rigidbody2D rb;
     // Start is called before the first frame update
@@ -57,6 +69,7 @@ public class Ball : MonoBehaviour
 
     private void StartDirection()
     {
+        ResetColor();
 
         int randomIndex = UnityEngine.Random.Range(0, possibleDirection.Count);
         while (randomIndex > possibleDirection.Count)
@@ -71,7 +84,6 @@ public class Ball : MonoBehaviour
     {
         if(SpeedAdder.magnitude > 0)
         {
-            //SpeedAdder.y = rb.velocity.y;
             rb.velocity += SpeedAdder;
         }
         else
@@ -86,7 +98,9 @@ public class Ball : MonoBehaviour
     {
         Vector2 incomingVector = rb.velocity;
         rb.velocity = Vector2.Reflect(incomingVector, normal);
-        
+        ColorShift();
+
+
     }
 
     public void ResetBall(bool startNew)
@@ -95,9 +109,38 @@ public class Ball : MonoBehaviour
         if (startNew)
         {
             StartDirection();
+
         }
         else { rb.velocity = Vector2.zero; }
         
     }
 
+    private void ColorShift()
+    {
+        
+            float speed = rb.velocity.magnitude;
+            float t = speedToColorCurve.Evaluate(Mathf.InverseLerp(0, maxSpeed, speed));
+
+            // Determine the color based on speed
+            Color currentColor = Color.Lerp(startColor, endColor, t);
+
+            // Apply the color to the sprite and trail
+            spriteRenderer.color = currentColor;
+            trailRenderer.startColor = currentColor;
+            trailRenderer.endColor = currentColor;
+            ballLight.color = currentColor;
+    }
+
+    private void ResetColor()
+    {
+        spriteRenderer.color = startColor;
+        trailRenderer.startColor = startColor;
+        trailRenderer.endColor = startColor;
+        ballLight.color = startColor;
+    }
+
+    private void Disolve()
+    {
+        material.SetFloat("_DissolveAmount", dissolveAmount);
+    }
 }

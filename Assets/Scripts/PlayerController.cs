@@ -10,6 +10,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] int playerID;
     [SerializeField] public string playerName;
     [SerializeField] float speedModifier;
+    [SerializeField] float speedBase;
     [SerializeField] float shrinkFactor; //how much smaller the paddle is based on score
     [SerializeField] float currentScale;
 
@@ -31,7 +32,7 @@ public class PlayerController : MonoBehaviour
     {
         if (isAI)
         {
-            rb.velocity = e.velocity * speedModifier;
+            rb.velocity = e.velocity * (speedBase + speedModifier);
         }
 
         
@@ -43,7 +44,7 @@ public class PlayerController : MonoBehaviour
         {
 
                    
-                rb.velocity = Vector2.left * speedModifier;
+                rb.velocity = Vector2.left * (speedBase + speedModifier);
                 
             
         }
@@ -55,7 +56,7 @@ public class PlayerController : MonoBehaviour
 
         
             
-                rb.velocity = Vector2.right * speedModifier;
+                rb.velocity = Vector2.right * (speedBase + speedModifier);
                 
             
             
@@ -92,7 +93,7 @@ public class PlayerController : MonoBehaviour
     public void Shrink(int score)
     {
         transform.localScale = new Vector3(Mathf.Clamp(5 - score,1,5), 1, 1);
-        speedModifier += score;
+        speedModifier = score;
         
     }
 
