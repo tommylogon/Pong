@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
@@ -18,8 +19,13 @@ public class Ball : MonoBehaviour
     [SerializeField] float speedIncreaseFactor = 1.1f;
     [SerializeField] float maxSpeed = 10f;
     [SerializeField] float dissolveAmount = 0f;
+    [SerializeField] float dissolveDuration = 2f;
+    bool isDissolving;
 
-    public Action onHit;
+    private bool shouldStartNewRound;
+
+    public event Action onHitWallOrPaddle;
+    public event Action OnDissolveFinished;
     public Action<Vector2> OnBallPositionChanged;
 
     private Vector2 lastreportedPosition;
@@ -39,12 +45,14 @@ public class Ball : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-       
+        material = GetComponent<SpriteRenderer>().material;
+
+        material.SetFloat("_DissolveAmount", 1);
     }
 
     private void Update()
     {
-        if((lastreportedPosition - (Vector2)transform.position).sqrMagnitude> 1)
+        if ((lastreportedPosition - (Vector2)transform.position).sqrMagnitude > 1)
         {
             lastreportedPosition = (Vector2)transform.position;
             OnBallPositionChanged?.Invoke(lastreportedPosition);
@@ -54,35 +62,43 @@ public class Ball : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        
-        if (other.CompareTag("Paddle") || other.CompareTag("Wall"))
+        if (!isDissolving)
         {
-            Vector2 normal = GameManager.instance.GetNormal(transform.position, other);
-            ReflectBall(normal);
+            if (other.CompareTag("Paddle") || other.CompareTag("Wall"))
+            {
+                Vector2 normal = GameManager.instance.GetNormal(transform.position, other);
+                ReflectBall(normal);
 
-            IncreaseSpeed(other.GetComponent<Rigidbody2D>().velocity);
-            onHit?.Invoke();
+                IncreaseSpeed(other.GetComponent<Rigidbody2D>().velocity);
+                onHitWallOrPaddle?.Invoke();
+
+            }
         }
         
+
     }
 
 
     private void StartDirection()
     {
-        ResetColor();
-
-        int randomIndex = UnityEngine.Random.Range(0, possibleDirection.Count);
-        while (randomIndex > possibleDirection.Count)
+        if (shouldStartNewRound)
         {
-            Debug.Log("Index is " + randomIndex);
-            randomIndex = UnityEngine.Random.Range(0, possibleDirection.Count);
+            ResetColor();
+
+            int randomIndex = UnityEngine.Random.Range(0, possibleDirection.Count);
+            while (randomIndex > possibleDirection.Count)
+            {
+                Debug.Log("Index is " + randomIndex);
+                randomIndex = UnityEngine.Random.Range(0, possibleDirection.Count);
+            }
+
+            rb.velocity = possibleDirection[randomIndex] * speedIncreaseFactor;
         }
 
-        rb.velocity = possibleDirection[randomIndex] * speedIncreaseFactor;
     }
     private void IncreaseSpeed(Vector2 SpeedAdder)
     {
-        if(SpeedAdder.magnitude > 0)
+        if (SpeedAdder.magnitude > 0)
         {
             rb.velocity += SpeedAdder;
         }
@@ -90,8 +106,8 @@ public class Ball : MonoBehaviour
         {
             rb.velocity *= speedIncreaseFactor;
         }
-        
-        
+
+
         rb.velocity = Vector2.ClampMagnitude(rb.velocity, maxSpeed);
     }
     private void ReflectBall(Vector2 normal)
@@ -103,32 +119,30 @@ public class Ball : MonoBehaviour
 
     }
 
-    public void ResetBall(bool startNew)
+    public void ResetBall(bool startNewRound)
     {
-        transform.position = Vector2.zero;
-        if (startNew)
-        {
-            StartDirection();
+        rb.velocity = Vector2.zero;
+        Dissolve(!startNewRound);//is startnewrouns is false the ball is reset and dissolves. reversed if true.
+        shouldStartNewRound = startNewRound;
 
-        }
-        else { rb.velocity = Vector2.zero; }
-        
+
+
     }
 
     private void ColorShift()
     {
-        
-            float speed = rb.velocity.magnitude;
-            float t = speedToColorCurve.Evaluate(Mathf.InverseLerp(0, maxSpeed, speed));
 
-            // Determine the color based on speed
-            Color currentColor = Color.Lerp(startColor, endColor, t);
+        float speed = rb.velocity.magnitude;
+        float t = speedToColorCurve.Evaluate(Mathf.InverseLerp(0, maxSpeed, speed));
 
-            // Apply the color to the sprite and trail
-            spriteRenderer.color = currentColor;
-            trailRenderer.startColor = currentColor;
-            trailRenderer.endColor = currentColor;
-            ballLight.color = currentColor;
+        // Determine the color based on speed
+        Color currentColor = Color.Lerp(startColor, endColor, t);
+
+        // Apply the color to the sprite and trail
+        spriteRenderer.color = currentColor;
+        trailRenderer.startColor = currentColor;
+        trailRenderer.endColor = currentColor;
+        ballLight.color = currentColor;
     }
 
     private void ResetColor()
@@ -139,8 +153,41 @@ public class Ball : MonoBehaviour
         ballLight.color = startColor;
     }
 
-    private void Disolve()
+    private void Dissolve(bool setToDissolve)
     {
-        material.SetFloat("_DissolveAmount", dissolveAmount);
+        StartCoroutine(DissolveCoroutine(setToDissolve, dissolveDuration));
+    }
+
+    private IEnumerator DissolveCoroutine(bool setToDissolve, float duration)
+    {
+        isDissolving = setToDissolve;
+        float time = 0;
+        float startValue = setToDissolve ? 0f : 1f; // Assuming 0 is not dissolved and 1 is fully dissolved
+        float endValue = setToDissolve ? 1f : 0f;
+        material.SetFloat("_DissolveAmount", startValue); // Set initial state
+
+        while (time < duration)
+        {
+            time += Time.deltaTime;
+            dissolveAmount = Mathf.Lerp(startValue, endValue, time / duration);
+            material.SetFloat("_DissolveAmount", dissolveAmount);
+            yield return null;
+        }
+
+        material.SetFloat("_DissolveAmount", endValue);
+        dissolveAmount = endValue;// Ensure it ends at the exact value
+        transform.position = Vector2.zero;
+
+        if (setToDissolve && dissolveAmount == 1f)
+        {
+            OnDissolveFinished?.Invoke(); // Notify that the dissolve effect is finished
+        }
+        if (!setToDissolve && dissolveAmount == 0f)
+        {
+            if (shouldStartNewRound)
+            {
+                StartDirection();
+            }
+        }
     }
 }

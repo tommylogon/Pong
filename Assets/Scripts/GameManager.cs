@@ -23,7 +23,8 @@ public class GameManager : MonoBehaviour
     {
         Running,
         Paused,
-        GameOver
+        GameOver,
+        Respawningball,
 
     }
     
@@ -32,23 +33,26 @@ public class GameManager : MonoBehaviour
     {
         instance = this;
         UIController.Instance.UpdateScore(currentScorePlayer1, currentScorePlayer2);
-        currentGameState = GameState.Paused; 
+        currentGameState = GameState.Paused;
+
+        ball.ResetBall(false);
 
 
-       
     }
     private void OnEnable()
     {
         Player1Score.onScore += () => AddScore(player1.GetPlayerID());
         Player2Score.onScore += () => AddScore(player2.GetPlayerID());
-        ball.onHit += () => SoundManager.instance.PlayHitSound();
-        
+        ball.onHitWallOrPaddle += () => SoundManager.instance.PlayHitSound();
+        ball.OnDissolveFinished += OnDissolveFinishedHandler;
     }
 
     private void OnDisable()
     {
         Player1Score.onScore -= () => AddScore(0);
         Player2Score.onScore -= () => AddScore(1);
+        ball.onHitWallOrPaddle -= () => SoundManager.instance.PlayHitSound();
+        ball.OnDissolveFinished -= OnDissolveFinishedHandler;
     }
 
     // Update is called once per frame
@@ -80,11 +84,13 @@ public class GameManager : MonoBehaviour
             if (currentScorePlayer1 > 4 || currentScorePlayer2 > 4)
             {
                 currentGameState = GameState.GameOver;
+                NewRound();
+                return;
                 
             }
-            
-            NewRound();
 
+            currentGameState = GameState.Respawningball;
+            NewRound();
 
         }
         
@@ -95,9 +101,12 @@ public class GameManager : MonoBehaviour
         if(currentGameState == GameState.Running)
         {
             player1.Reset();
-            player2.Reset();           
-            ball.ResetBall(false);
+            player2.Reset();
             StartCoroutine(StartMatchAfterDelay());
+        }
+        else if(currentGameState == GameState.Respawningball)
+        {
+            ball.ResetBall(false);            
         }
         else if(currentGameState == GameState.GameOver)
         {
@@ -113,16 +122,20 @@ public class GameManager : MonoBehaviour
             
             ball.ResetBall(false);
         }
+
         
     }
 
+    
+
     private void NewMatch()
     {
-        currentGameState = GameState.Running;
+        currentGameState = GameState.Respawningball;
         currentScorePlayer1 = 0;
         currentScorePlayer2 = 0;
         player1.Shrink(currentScorePlayer1);
         player2.Shrink(currentScorePlayer2);
+        
     }
 
     public void StartLocalMatch()
@@ -130,7 +143,7 @@ public class GameManager : MonoBehaviour
         player1.isAI = false;
         player2.isAI = false;
         NewMatch();
-        NewRound();
+        
         
 
     }
@@ -140,7 +153,7 @@ public class GameManager : MonoBehaviour
         player1.isAI = false;
         player2.isAI = true;
         NewMatch();
-        NewRound();
+        
         
     }
 
@@ -148,10 +161,20 @@ public class GameManager : MonoBehaviour
     {
         SoundManager.instance.PlayCountDownSound();
         UIController.Instance.StartCountdown(waitTimer);
-
+        ball.ResetBall(true);
         yield return new WaitForSeconds(waitTimer);
 
-        ball.ResetBall(true);
+        
+    }
+
+
+    private void OnDissolveFinishedHandler()
+    {
+        if(currentGameState == GameState.Respawningball)
+        {
+            currentGameState = GameState.Running;
+            NewRound();
+        }
     }
 
     public Vector2 GetNormal(Vector2 position, Collider2D collider)

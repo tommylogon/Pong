@@ -38,30 +38,17 @@ public class PlayerController : MonoBehaviour
         
     }
 
-    public void MoveLeft()
+    public void MovePaddle(InputAction.CallbackContext context)
     {
-        if (!isAI)
+        if(!isAI)
         {
-
-                   
-                rb.velocity = Vector2.left * (speedBase + speedModifier);
-                
-            
+            Vector2 newSpeed = context.ReadValue<Vector2>();
+            newSpeed.y = 0;
+            rb.velocity = newSpeed * (speedBase + speedModifier);
         }
-    }
-    public void MoveRight()
-    {
-        if (!isAI)
-        {
-
         
-            
-                rb.velocity = Vector2.right * (speedBase + speedModifier);
-                
-            
-            
-        }
     }
+
 
     public void Reset()
     {
