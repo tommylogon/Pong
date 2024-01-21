@@ -6,33 +6,6 @@
             "id": "57923d8c-173a-41bf-afe4-d1bd799aae38",
             "actions": [
                 {
-                    "name": "MoveLeft",
-                    "type": "Button",
-                    "id": "1ae9d2bd-6454-4538-bbe8-900d095fe724",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "MoveRight",
-                    "type": "Button",
-                    "id": "8148865f-aabf-415a-8410-a34f592fc150",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "Shoot",
-                    "type": "Button",
-                    "id": "41d6578d-55b1-4734-a6d0-904f3d20ebdd",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
                     "name": "Pause",
                     "type": "Button",
                     "id": "dc393ebe-10d9-4660-8134-c9e79ebdf408",
@@ -52,39 +25,6 @@
                 }
             ],
             "bindings": [
-                {
-                    "name": "",
-                    "id": "25ea59f2-10ad-467b-9123-e595b66263b0",
-                    "path": "<Keyboard>/a",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "MoveLeft",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "87e29da0-6749-4285-abb9-71a9e1808881",
-                    "path": "<Keyboard>/d",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "MoveRight",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "10301058-e992-417f-b59e-7de531cef019",
-                    "path": "<Keyboard>/w",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Shoot",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
                 {
                     "name": "",
                     "id": "595dcb98-4ce2-45a7-8de9-e97248457516",
@@ -147,18 +87,18 @@
             "id": "d3c00337-44fc-4a1e-9787-bd3def0c331e",
             "actions": [
                 {
-                    "name": "MoveLeft",
-                    "type": "Button",
-                    "id": "9feb8b5e-372f-437f-9d01-520b2af3d004",
-                    "expectedControlType": "Button",
+                    "name": "Move",
+                    "type": "PassThrough",
+                    "id": "ae44dd12-b3ff-41cf-a532-ecdea8538c48",
+                    "expectedControlType": "Vector2",
                     "processors": "",
                     "interactions": "",
-                    "initialStateCheck": false
+                    "initialStateCheck": true
                 },
                 {
-                    "name": "MoveRight",
+                    "name": "Pause",
                     "type": "Button",
-                    "id": "fc9fa33f-f374-4bb6-a89b-a3cd5b44b6e5",
+                    "id": "5c554c05-b3e8-4062-8d24-9c258bdc3ead",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -168,23 +108,56 @@
             "bindings": [
                 {
                     "name": "",
-                    "id": "1724fc93-f55b-4c45-b3ab-0aa54b1f98ae",
-                    "path": "<Keyboard>/leftArrow",
+                    "id": "2637ac3f-e3dd-4e10-b138-5268e2eb14d3",
+                    "path": "<Gamepad>/rightStick",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "MoveLeft",
+                    "action": "Move",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
                 {
-                    "name": "",
-                    "id": "09d86b25-6dc6-485a-829a-7b6c87955812",
+                    "name": "2D Vector",
+                    "id": "d9c9b98d-f61c-4730-a050-44e094c68217",
+                    "path": "2DVector",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Move",
+                    "isComposite": true,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "left",
+                    "id": "92840d46-b081-4b1a-982f-7a0c13adec66",
+                    "path": "<Keyboard>/leftArrow",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Move",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "right",
+                    "id": "5425af2c-811e-458e-afd9-ea2273ec0c15",
                     "path": "<Keyboard>/rightArrow",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "MoveRight",
+                    "action": "Move",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "",
+                    "id": "5df8c50f-a67a-4e0d-970b-db6195f3eb4b",
+                    "path": "<Keyboard>/p",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Pause",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

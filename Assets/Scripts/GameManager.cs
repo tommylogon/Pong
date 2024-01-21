@@ -135,7 +135,9 @@ public class GameManager : MonoBehaviour
         currentScorePlayer2 = 0;
         player1.Shrink(currentScorePlayer1);
         player2.Shrink(currentScorePlayer2);
-        
+        OnDissolveFinishedHandler();
+
+
     }
 
     public void StartLocalMatch()
